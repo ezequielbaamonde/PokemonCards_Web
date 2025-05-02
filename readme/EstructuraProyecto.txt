@@ -1,0 +1,10 @@
+Dentro del SRC nos encontraremos con:
+    ---> config: Contiene la conexión a la base de datos.
+    ---> controllers: Contiene subdirectorios con los endpoints propuestos en el proyecto.
+        -> Cada uno esta separado por categoria; 'cards' contiene los endpoints de MAZO
+                                                 'game' contiene los endpoints de partidas y jugadas
+                                                 'login' contiene todos los endpoints de usuarios
+    ---> helpers: Contiene funciones reutilizables o que se llaman dentro de los controladores.
+    ---> middlewares: Contiene el programa de validación de TOKEN para el usuario.
+    ---> public: Es la carpeta principal del proyecto, en ella se encuentra el index.php donde creamos la APP.
+    ---> routes: Contiene un archivo "rutas" a archivos .php, es requerido dentro del index para contener los endpoints y funciones en 1 sola línea.

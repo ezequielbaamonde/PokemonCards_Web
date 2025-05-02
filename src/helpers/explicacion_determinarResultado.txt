@@ -1,0 +1,38 @@
+El SELECT 1 en SQL es una consulta que simplemente devuelve el valor constante 1 como resultado. En este caso, no se está seleccionando ninguna
+columna específica de una tabla, sino que se utiliza para verificar si existe al menos un registro que cumpla con las condiciones especificadas
+en la cláusula WHERE.
+
+Explicación paso a paso:
+Tabla: La consulta está dirigida a la tabla gana_a.
+Condiciones (WHERE):
+    atributo_id = :servidor: Busca registros donde la columna atributo_id coincida con el valor del parámetro :servidor.
+    atributo_id2 = :jugador: Busca registros donde la columna atributo_id2 coincida con el valor del parámetro :jugador.
+
+    SELECT 1: En lugar de devolver todas las columnas o datos específicos, solo devuelve el valor constante 1 para los registros que cumplan las condiciones.
+    LIMIT 1: Limita el resultado a un solo registro, lo que mejora el rendimiento si solo necesitas saber si existe al menos un registro que cumpla las condiciones.
+
+¿Por qué usar SELECT 1?
+Se utiliza comúnmente para verificar la existencia de registros en una tabla sin necesidad de cargar datos innecesarios. Por ejemplo:
+
+Si la consulta devuelve un resultado, significa que existe al menos un registro que cumple las condiciones.
+Si no devuelve nada, significa que no hay registros que cumplan las condiciones.
+
+Ejemplo:
+Supongamos que la tabla gana_a tiene los siguientes datos:
+atributo_id	atributo_id2
+1	2
+3	4
+
+Si ejecutas la consulta con :servidor = 1 y :jugador = 2, el resultado será 1 porque existe un registro que cumple las condiciones. Si no hay coincidencias, no se devolverá ningún resultado.
+ Esto es útil en lógica de control, como para decidir si realizar una acción adicional o no.
+
+-------
+
+Supongamos que en la tabla gana_a existe:
+
+atributo_id	atributo_id2
+6	2
+
+Y el jugador tiene atributo 2, el servidor 6 → se consulta si 6 gana a 2 y se obtiene una fila → fetchColumn() da 1 → !== false → devuelve true.
+
+Es una forma muy común y eficiente de verificar si una relación existe en una tabla.

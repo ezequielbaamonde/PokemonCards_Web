@@ -28,23 +28,3 @@ $app->get('/', function (Request $request, Response $response) {
 require_once __DIR__ . '/../routes/routes.php'; //Importa las rutas de la app.
 
 $app->run(); //Corre la APP.
-
-//$app->setBasePath('/ProyectoWeb/src/public'); //Establece la ruta base de la app.
-
-/*El ENDPOINT es el primer parametro de las funciones de las rutas (Ejemplo /login), el segundo es la
-funcion que se ejecuta cuando se accede a esa ruta --->
-$app->get('/saludo/{name}', function (Request $request, Response $response, $args) {
-    $response->getBody()->write('Hello ' . $args['name']); //Escribe en el body de la respuesta;
-    return $response;
-});*/
-
-// Rutas de la API
-/*$app->add(function ($request, $handler) {
-    $response = $handler->handle($request);
-
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PUT, PATCH, DELETE')
-        ->withHeader('Content-Type', 'application/json');
-});*/

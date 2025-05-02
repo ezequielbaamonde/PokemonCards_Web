@@ -213,6 +213,19 @@ $app->post('/jugadas', function (Request $request, Response $response) {
         } else {
             $data['resultado_final'] = 'La partida terminó empatada';
         }
+
+        // Actualizar el estado de las cartas en mazo_carta a 'en_mazo' para el SV
+        $stmt = $db->prepare("
+            UPDATE mazo_carta 
+            SET estado = 'en_mazo' 
+            WHERE mazo_id = (
+                SELECT mazo_id FROM partida WHERE id = :idPartida
+            ) AND carta_id IN (
+                SELECT carta_id FROM carta WHERE usuario_id = 1
+            )
+        ");
+        $stmt->bindParam(':idPartida', $idPartida);
+        $stmt->execute();
     }
 
     $response->getBody()->write(json_encode($data));
@@ -227,7 +240,7 @@ $app->post('/jugadas', function (Request $request, Response $response) {
 $app->get('/usuarios/{usuario}/partidas/{partida}/cartas', function (Request $request, Response $response, array $args) {
     $db = DB::getConnection();
 
-    $idUsuario = (int) $args['usuario'];
+    $idUsuario = (int) $args['usuario']; //id usuario
     $idPartida = (int) $args['partida'];
 
     // Validar que el usuario en el token sea el mismo del path o que sea el servidor
