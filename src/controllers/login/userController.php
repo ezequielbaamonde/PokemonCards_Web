@@ -4,6 +4,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+require_once __DIR__ . '/../../middlewares/JwtMiddleware.php'; // importar el middleware
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
@@ -15,19 +16,17 @@ $app->post('/login', function (Request $request, Response $response) {
     // Extrae los parámetros de la solicitud
     //name = $params['nombre'] ?? null;
     $username = $params['usuario'] ?? null;
-    $name = $params['nombre'] ?? null;
     $password = $params['password'] ?? null;
 
     // Validación de datos
-    if (!$username || !$password || !$name) {
-        $response->getBody()->write(json_encode(['error' => 'El usuario, el nombre y la clave son requeridos']));
+    if (!$username || !$password) {
+        $response->getBody()->write(json_encode(['error' => 'El usuario y la clave son requeridos']));
         //return $response->withStatus(400);
         return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
     }
 
-    $stmt = $db->prepare("SELECT * FROM usuario WHERE usuario = :username and nombre = :name"); // Prepara la consulta SQL para buscar el usuario por nombre y contraseña.
+    $stmt = $db->prepare("SELECT * FROM usuario WHERE usuario = :username"); // Prepara la consulta SQL para buscar el usuario por nombre y contraseña.
     $stmt->bindParam(':username', $username);
-    $stmt->bindParam(':name', $name); // Vincula el parámetro :name a la variable $name.
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC); // Busca el usuario en la base de datos.
 
@@ -77,26 +76,22 @@ $app->post('/registro', function (Request $request, Response $response) {
     $username = $data['username'] ?? '';
     $name = $data['nombre'] ?? '';
     $password = $data['password'] ?? '';
-
-    /* Validación del nombre de usuario: debe tener entre 6 y 20 caracteres alfanuméricos preg_match es una
-    funcion de PHP que permite realizar una búsqueda de patrones en una cadena de texto. En este caso, se
-    está buscando una cadena que contenga solo letras y números, con una longitud de entre 6 y 20 caracteres.
-    Retorna 1 si se encuentra una coincidencia, 0 si no se encuentra ninguna coincidencia y false si ocurre
-    un error.*/
     
-    if (!preg_match('/^[a-zA-Z0-9]{6,20}$/', $username)) {
-        $response->getBody()->write(json_encode(['error' => 'El nombre de usuario debe tener entre 6 y 20 caracteres alfanuméricos.']));
+    $usernameError = validateUsername($username);
+    if ($usernameError) {
+        $response->getBody()->write(json_encode(['error' => $usernameError]));
         return $response->withStatus(400);
     }
 
-    if (strlen($name) < 6 || strlen($name) > 20) {
-        $response->getBody()->write(json_encode(['error' => 'El nombre debe tener entre 6 y 20 caracteres.']));
+    $nameError = validateName($name);
+    if ($nameError) {
+        $response->getBody()->write(json_encode(['error' => $nameError]));
         return $response->withStatus(400);
     }
 
-    // Validación de la clave
-    if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $password)) {
-        $response->getBody()->write(json_encode(['error' => 'La clave debe tener al menos 8 caracteres, incluyendo mayúsculas, minúsculas, números y caracteres especiales.']));
+    $passwordError = validatePassword($password);
+    if ($passwordError) {
+        $response->getBody()->write(json_encode(['error' => $passwordError]));
         return $response->withStatus(400);
     }
 
@@ -130,9 +125,7 @@ $app->post('/registro', function (Request $request, Response $response) {
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
 
-//Valida TOKEN retornado tras LOGIN.
-require_once __DIR__ . '/../../middlewares/JwtMiddleware.php'; // importar el middleware
-
+/*Valida TOKEN retornado tras LOGIN.
 $app->get('/perfil', function (Request $request, Response $response) {
     try {
         $user = $request->getAttribute('jwt'); // decodifica el token JWT
@@ -148,7 +141,7 @@ $app->get('/perfil', function (Request $request, Response $response) {
         ]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
     }
-})->add($jwtMiddleware); // agrega el middleware JWT a la ruta /perfil
+})->add($jwtMiddleware); // agrega el middleware JWT a la ruta /perfil*/
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
@@ -176,14 +169,16 @@ $app->put('/usuarios/{usuario}', function (Request $request, Response $response,
         return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
     }
 
-    if (strlen($newUsername) < 6 || strlen($newUsername) > 20) {
-        $response->getBody()->write(json_encode(['error' => 'El nombre debe tener entre 6 y 20 caracteres.']));
+    $nameError = validateName($newUsername);
+    if ($nameError) {
+        $response->getBody()->write(json_encode(['error' => $nameError]));
         return $response->withStatus(400);
     }
 
-    if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $newPassword)) {
-        $response->getBody()->write(json_encode(['error' => 'La contraseña debe tener al menos 8 caracteres, incluyendo mayúsculas, minúsculas, números y caracteres especiales']));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+    $passwordError = validatePassword($newPassword);
+    if ($passwordError) {
+        $response->getBody()->write(json_encode(['error' => $passwordError]));
+        return $response->withStatus(400);
     }
 
     // 4. Actualizar en la base de datos

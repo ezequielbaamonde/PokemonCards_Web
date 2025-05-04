@@ -4,6 +4,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+require_once __DIR__ . '/../../middlewares/JwtMiddleware.php'; // importar el middleware
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
@@ -136,16 +137,23 @@ $app->delete('/mazos/{mazo}', function (Request $request, Response $response, $a
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
 
-/* Ver mazos creados por el usuario */
+// Ver mazos creados por el usuario (con nombre de usuario en la URL)
 $app->get('/usuarios/{usuario}/mazos', function (Request $request, Response $response, array $args) {
     $db = DB::getConnection();
-    $usuarioId = (int) $args['usuario'];
+    $nombreUser = $args['usuario'];
 
+    // Extraer ID del usuario logueado desde el token
     $jwt = $request->getAttribute('jwt');
-    $usuarioLogueado = $jwt->sub;
+    $usuarioId = $jwt->sub;
 
-    // Validar que el usuario logueado sea el mismo que el solicitado
-    if ($usuarioId !== $usuarioLogueado) {
+    // Obtener el nombre real del usuario desde la base de datos
+    $stmt = $db->prepare("SELECT usuario FROM usuario WHERE id = :id");
+    $stmt->bindParam(':id', $usuarioId, PDO::PARAM_INT);
+    $stmt->execute();
+    $nombreReal = $stmt->fetchColumn();
+
+    // Validar que el nombre en la URL coincida con el del usuario logueado
+    if (!$nombreReal || strtolower($nombreReal) !== strtolower($nombreUser)) {
         $response->getBody()->write(json_encode(['error' => 'Acceso no autorizado']));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
     }
@@ -155,6 +163,11 @@ $app->get('/usuarios/{usuario}/mazos', function (Request $request, Response $res
     $stmt->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
     $stmt->execute();
     $mazos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (empty($mazos)) {
+        $response->getBody()->write(json_encode(['mensaje' => 'El usuario no tiene mazos creados']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+    }
 
     $response->getBody()->write(json_encode(['mazos' => $mazos]));
     return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
@@ -240,6 +253,11 @@ $app->get('/cartas', function (Request $request, Response $response) {
     $stmt = $db->prepare($sql);
     $stmt->execute($queryParams);
     $cartas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (empty($cartas)) {
+        $response->getBody()->write(json_encode(['mensaje' => 'No se encontraron cartas que coincidan con los criterios de búsqueda']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+    }
 
     $response->getBody()->write(json_encode($cartas));
     return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
