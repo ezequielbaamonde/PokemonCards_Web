@@ -4,6 +4,14 @@
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
+// Permitir peticiones desde tu frontend (ajusta el dominio según sea necesario)
+header("Access-Control-Allow-Origin: http://localhost:5173");
+// Permitir métodos HTTP específicos
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+// Permitir encabezados personalizados, como Authorization (JWT) si es necesario
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+// Permitir que las cookies o encabezados de autenticación se envíen (opcional)
+header("Access-Control-Allow-Credentials: true");
 
 
 require __DIR__ . '/../../vendor/autoload.php'; //COLOCAR PUNTOS PARA DIRIGIRME AL DIRECTORIO VENDOR.

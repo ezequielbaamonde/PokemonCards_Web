@@ -36,6 +36,40 @@ $app->post('/partidas', function (Request $request, Response $response) {
         return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
     }
 
+    // Verificar si el usuario ya tiene una partida en curso
+    $stmt = $db->prepare("
+        SELECT id FROM partida
+        WHERE usuario_id = :idUsuario AND estado = 'en_curso'
+        LIMIT 1
+    ");
+    $stmt->bindParam(':idUsuario', $idUsuario);
+    $stmt->execute();
+    $partidaEnCurso = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($partidaEnCurso) {
+        $response->getBody()->write(json_encode([
+            'error' => 'Ya tenés una partida en curso. Debés finalizarla antes de iniciar una nueva.'
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(409);
+    }
+
+    // Verificar si el servidor ya tiene cartas en mano (por lo tanto, hay una partida en curso)
+    $stmt = $db->prepare("
+        SELECT COUNT(*) FROM mazo_carta mc
+        INNER JOIN mazo m ON mc.mazo_id = m.id
+        WHERE m.usuario_id = 1 AND mc.estado = 'en_mano'
+    ");
+    $stmt->execute();
+    $cartasEnManoServidor = (int) $stmt->fetchColumn();
+
+    if ($cartasEnManoServidor > 0) {
+        $response->getBody()->write(json_encode([
+            'error' => 'Ya hay una partida en curso con el servidor. Esperá a que finalice para iniciar una nueva.'
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(409); // 409 Conflict
+    }
+
+
     $fechaCreacion = (new DateTime('now', new DateTimeZone('America/Argentina/Buenos_Aires')))->format('Y-m-d H:i:s');
     $estado = 'en_curso';
     $now = '-';
@@ -72,13 +106,13 @@ $app->post('/partidas', function (Request $request, Response $response) {
 
 
     // Buscamos las cartas asociadas al mazo
-    //mc es un alias para mazo_carta y c es un alias para carta
+    // mc es un alias para mazo_carta y c es un alias para carta
     // Se hace un INNER JOIN para obtener las cartas que están en el mazo
     $stmt = $db->prepare("
         SELECT c.*
         FROM mazo_carta mc
         INNER JOIN carta c ON mc.carta_id = c.id
-        WHERE mc.mazo_id = :idMazo
+        WHERE mc.mazo_id = :idMazo AND mc.estado = 'en_mano'
     ");
     $stmt->bindParam(':idMazo', $idMazo);
     $stmt->execute();
@@ -91,6 +125,53 @@ $app->post('/partidas', function (Request $request, Response $response) {
     ]));
     return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
 })->add($jwtMiddleware); // Middleware para verificar el JWT y que el usuario se haya logeado correctamente
+
+/*-----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------*/
+
+// Obtener la partida en curso del usuario logueado mediante token JWT
+$app->get('/partidas/en-curso', function (Request $request, Response $response) {
+    $db = DB::getConnection();
+    $jwt = $request->getAttribute('jwt');
+    $idUsuario = $jwt->sub;
+
+    $stmt = $db->prepare("
+        SELECT p.id AS id_partida, p.mazo_id, c.*
+        FROM partida p
+        INNER JOIN mazo_carta mc ON mc.mazo_id = p.mazo_id
+        INNER JOIN carta c ON mc.carta_id = c.id
+        WHERE p.usuario_id = :idUsuario 
+          AND p.estado = 'en_curso'
+          AND mc.estado = 'en_mano'
+    ");
+    $stmt->bindParam(':idUsuario', $idUsuario);
+    $stmt->execute();
+    $cartas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (!$cartas) {
+        $response->getBody()->write(json_encode(['message' => 'No hay partidas en curso']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(204); //No hay contenido
+    }
+
+    // Obtener el ID de la partida y mazo (de la primera fila -LIMIT 1-)
+    $stmt = $db->prepare("
+        SELECT id AS id_partida, mazo_id
+        FROM partida
+        WHERE usuario_id = :idUsuario AND estado = 'en_curso'
+        LIMIT 1
+    ");
+    $stmt->bindParam(':idUsuario', $idUsuario);
+    $stmt->execute();
+    $partida = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $response->getBody()->write(json_encode([
+        'message' => 'Se encontró una partida en curso. Se debe finalizar antes de iniciar una nueva.',
+        'id_partida' => $partida['id_partida'],
+        'mazo_id' => $partida['mazo_id'],
+        'cartas' => $cartas
+    ]));
+    return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+})->add($jwtMiddleware);
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
@@ -126,7 +207,7 @@ $app->post('/jugadas', function (Request $request, Response $response) {
     }
 
     $stmt = $db->prepare("
-        SELECT mc.carta_id, c.ataque, c.atributo_id
+        SELECT mc.carta_id, c.ataque, c.atributo_id, c.nombre, c.ataque_nombre
         FROM mazo_carta mc
         JOIN carta c ON mc.carta_id = c.id
         WHERE mc.carta_id = :idCartaJugador AND mc.mazo_id = :idMazo AND mc.estado = 'en_mano'
@@ -211,8 +292,9 @@ $app->post('/jugadas', function (Request $request, Response $response) {
     //El round redondea a 2 decimales
     $data = [
         'carta_servidor' => $cartaServidor,
-        'fuerza_usuario' => round($fuerzaJugador, 2),
-        'fuerza_servidor' => round($fuerzaServidor, 2)
+        'fuerza_servidor' => round($fuerzaServidor, 2),
+        'fuerza_usuario' => round($fuerzaJugador, 2)
+        
     ];
 
     // Si se han jugado 5 rondas, determinar el resultado final
@@ -248,6 +330,15 @@ $app->post('/jugadas', function (Request $request, Response $response) {
             WHERE mazo_id IN (SELECT id FROM mazo WHERE usuario_id = 1)
         ");
         $stmt->execute();
+
+        // Reiniciar el mazo del jugador
+        $stmt = $db->prepare("
+            UPDATE mazo_carta 
+            SET estado = 'en_mazo' 
+            WHERE mazo_id = :mazoJugador
+        ");
+        $stmt->bindParam(':mazoJugador', $partida['mazo_id']);
+        $stmt->execute();
     }
 
     $response->getBody()->write(json_encode($data));
@@ -265,27 +356,44 @@ $app->get('/usuarios/{usuario}/partidas/{partida}/cartas', function (Request $re
     $idUsuario = (int) $args['usuario']; //id usuario
     $idPartida = (int) $args['partida'];
 
-    // Validar que el usuario en el token sea el mismo del path o que sea el servidor
+    // Obtener el JWT del middleware
     $jwt = $request->getAttribute('jwt');
-    
-    if ($jwt->sub !== $idUsuario && $jwt->sub !== 1) {
+    $idToken = $jwt->sub;
+
+     // Validar acceso: si no es el servidor, debe ser el mismo del token
+    if ($idUsuario !== 1 && $idToken !== $idUsuario) {
         $response->getBody()->write(json_encode(['error' => 'Acceso no autorizado']));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
     }
 
-    // Obtener el mazo usado por el usuario en la partida
-    $stmt = $db->prepare("SELECT mazo_id FROM partida WHERE id = :idPartida AND usuario_id = :idUsuario");
-    $stmt->bindParam(':idPartida', $idPartida);
-    $stmt->bindParam(':idUsuario', $idUsuario);
-    $stmt->execute();
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Obtener el mazo asociado
+    if ($idUsuario === 1) {
+        // Es el servidor, tomar cualquier mazo del usuario_id 1
+        $stmt = $db->prepare("SELECT id FROM mazo WHERE usuario_id = 1 LIMIT 1");
+        $stmt->execute();
+        $mazoServidor = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$result) {
-        $response->getBody()->write(json_encode(['error' => 'Partida no encontrada o no pertenece al usuario']));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        if (!$mazoServidor) {
+            $response->getBody()->write(json_encode(['error' => 'Mazo del servidor no encontrado']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        }
+
+        $idMazo = $mazoServidor['id'];
+
+    } else {
+        // Es un usuario común, obtener su mazo en la partida
+        $stmt = $db->prepare("SELECT mazo_id FROM partida WHERE id = :idPartida AND usuario_id = :idUsuario");
+        $stmt->bindParam(':idPartida', $idPartida);
+        $stmt->bindParam(':idUsuario', $idUsuario);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$result) {
+            $response->getBody()->write(json_encode(['error' => 'Partida no encontrada o no pertenece al usuario']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        }
+        $idMazo = $result['mazo_id'];
     }
-
-    $idMazo = $result['mazo_id'];
 
     // Obtener los atributos de las cartas en mano
     //El distinct es para eliminar las filas donde se repite el atributo.
@@ -294,8 +402,11 @@ $app->get('/usuarios/{usuario}/partidas/{partida}/cartas', function (Request $re
         FROM mazo_carta mc
         JOIN carta c ON mc.carta_id = c.id
         JOIN atributo a ON c.atributo_id = a.id
-        WHERE mc.mazo_id = :idMazo AND mc.estado = 'en_mano'
+        WHERE mc.mazo_id = :idMazo
+        AND mc.estado = 'en_mano'   
     ");
+
+ 
 
     $stmt->bindParam(':idMazo', $idMazo);
     $stmt->execute();
@@ -303,7 +414,7 @@ $app->get('/usuarios/{usuario}/partidas/{partida}/cartas', function (Request $re
 
     $response->getBody()->write(json_encode(['atributos' => $atributos]));
     return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-})->add($jwtMiddleware);
+})-> add($jwtMiddleware);
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
@@ -311,18 +422,19 @@ $app->get('/usuarios/{usuario}/partidas/{partida}/cartas', function (Request $re
 /* Estadisticas  */
 $app->get('/estadistica', function (Request $request, Response $response) {
     $db = DB::getConnection();
-
+    //AÑADIMOS u.id para que no de error el KEYMAP en REACT
     $sql = "
         SELECT 
-            u.nombre AS usuario,
+            u.id,
+            u.nombre,
             COUNT(*) AS total_partidas,
-            SUM(CASE WHEN p.el_usuario = 'gano' THEN 1 ELSE 0 END) AS partidas_ganadas,
-            SUM(CASE WHEN p.el_usuario = 'perdio' THEN 1 ELSE 0 END) AS partidas_perdidas,
-            SUM(CASE WHEN p.el_usuario = 'empato' THEN 1 ELSE 0 END) AS partidas_empatadas
+            SUM(CASE WHEN p.el_usuario = 'gano' THEN 1 ELSE 0 END) AS ganadas,
+            SUM(CASE WHEN p.el_usuario = 'perdio' THEN 1 ELSE 0 END) AS perdidas,
+            SUM(CASE WHEN p.el_usuario = 'empato' THEN 1 ELSE 0 END) AS empatadas
         FROM usuario u
         JOIN partida p ON p.usuario_id = u.id
         GROUP BY u.id, u.nombre
-        ORDER BY usuario
+        ORDER BY u.nombre
     ";
 
     $stmt = $db->query($sql);

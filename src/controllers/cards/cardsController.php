@@ -58,6 +58,12 @@ $app->post('/mazos', function (Request $request, Response $response) {
         return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
     }
 
+    // Validar longitud máxima del nombre (Nuevo)
+    if (mb_strlen($nombre) > 20) {
+        $response->getBody()->write(json_encode(['error' => 'El nombre del mazo no puede tener más de 20 caracteres']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+    }
+
     // Crear el mazo
     $stmt = $db->prepare("INSERT INTO mazo (usuario_id, nombre) VALUES (:usuarioId, :nombre)");
     $stmt->bindParam(':usuarioId', $usuarioId);
@@ -176,6 +182,35 @@ $app->get('/usuarios/{usuario}/mazos', function (Request $request, Response $res
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
 
+/* Lista las cartas que conforma un mazo -> Utilizamos para MODAL de frontend */
+$app->get('/mazos/{id}/cartas', function (Request $request, Response $response, array $args) {
+    $mazoId = $args['id'];
+    $db = DB::getConnection();
+
+    $sql = "SELECT 
+              c.id, 
+              c.nombre, 
+              c.ataque, 
+              c.ataque_nombre, 
+              a.nombre AS atributo 
+            FROM mazo_carta mc
+            INNER JOIN carta c ON mc.carta_id = c.id
+            INNER JOIN atributo a ON c.atributo_id = a.id
+            WHERE mc.mazo_id = :mazoId AND mc.estado = 'en_mazo'";
+
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(':mazoId', $mazoId, PDO::PARAM_INT);
+    $stmt->execute();
+    $cartas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $response->getBody()->write(json_encode($cartas));
+    return $response->withHeader('Content-Type', 'application/json')
+                    ->withStatus(200);
+})->add($jwtMiddleware);
+
+/*-----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------*/
+
 /* Cambiar nombre de mazo */
 $app->put('/mazos/{mazo}', function (Request $request, Response $response, array $args) {
     $db = DB::getConnection();
@@ -201,6 +236,12 @@ $app->put('/mazos/{mazo}', function (Request $request, Response $response, array
     if (!$stmt->fetch()) {
         $response->getBody()->write(json_encode(['error' => 'El mazo no pertenece al usuario']));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+    }
+    
+    // Validar longitud máxima del nombre (Nuevo)
+    if (mb_strlen($nuevoNombre) > 20) {
+        $response->getBody()->write(json_encode(['error' => 'El nombre del mazo no puede tener más de 20 caracteres']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
     }
 
     // Actualizar el nombre del mazo

@@ -4,17 +4,20 @@ class DB {
     //El modificador de acceso static permite acceder a la propiedad sin necesidad de crear una instancia de la clase.
 
     public static function getConnection() {
-        if (!self::$connection) {
+        if (!self::$connection) { /*self se usa dentro de una clase para
+            hacer referencia a elementos estáticos (métodos o propiedades) de esa misma clase.*/
+            //Almaceno los parametros de mi conexión por PDO
             $host = 'localhost';
-            $dbname = 'nombre_base_datos';
+            $dbname = 'pruebaproyecto';
             $user = 'root';
             $pass = '';
+            //intento conexión
             try {
                 self::$connection = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
                 self::$connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                /*echo json_encode(['success' => 'Connected to the database successfully.']);*/
             } catch (PDOException $e) {
-                http_response_code(500); // Cambia el estado HTTP a 500 (Error interno del servidor)
-                die(json_encode(['error' => $e->getMessage()]));
+                die(json_encode(['error' => $e->getMessage()])); //Sino, arroja mensaje por excepción
             }
         }
 

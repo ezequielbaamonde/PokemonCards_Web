@@ -1,0 +1,712 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Tomorrow:ital,wght@0,400;1,300&display=swap');
+
+
+/* Esto asegura que toda la página tenga altura completa */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  background-color: #242424;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='152' height='152' viewBox='0 0 152 152'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='temple' fill='%23ee4232' fill-opacity='0.14'%3E%3Cpath d='M152 150v2H0v-2h28v-8H8v-20H0v-2h8V80h42v20h20v42H30v8h90v-8H80v-42h20V80h42v40h8V30h-8v40h-42V50H80V8h40V0h2v8h20v20h8V0h2v150zm-2 0v-28h-8v20h-20v8h28zM82 30v18h18V30H82zm20 18h20v20h18V30h-20V10H82v18h20v20zm0 2v18h18V50h-18zm20-22h18V10h-18v18zm-54 92v-18H50v18h18zm-20-18H28V82H10v38h20v20h38v-18H48v-20zm0-2V82H30v18h18zm-20 22H10v18h18v-18zm54 0v18h38v-20h20V82h-18v20h-20v20H82zm18-20H82v18h18v-18zm2-2h18V82h-18v18zm20 40v-18h18v18h-18zM30 0h-2v8H8v20H0v2h8v40h42V50h20V8H30V0zm20 48h18V30H50v18zm18-20H48v20H28v20H10V30h20V10h38v18zM30 50h18v18H30V50zm-2-40H10v18h18V10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+label{
+  font-family: 'Press Start 2P', cursive;
+  font-size: 20px;
+}
+/* Layout principal en columna */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Contenido principal se expande para empujar el footer */
+.main-content {
+  flex: 1; /*Esta propiedad le indica al elemento que debe crecer y ocupar todo el espacio disponible en el contenedor flexible.*/
+  padding: 20px;
+}
+
+/* *********HEADER********* */
+.encabezado{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background-color: #c20903; */
+  /* padding: 1rem; */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+}
+
+@import url('https://fonts.cdnfonts.com/css/pokemon-solid');
+.encabezado h1 {
+  color: white;
+  font-size: 2em;
+  /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
+  font-family: 'Pokemon Solid', sans-serif; /* IMPORTADO */
+  letter-spacing: 7px;
+}
+
+.encabezado img {
+  width: 100px;
+  height: 100px;
+  margin-left: 20px;
+}
+
+.logo-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* *********FOOTER********* */
+.footer {
+  /* background-color: #1a1a1a; */
+  background-color: #33333348;
+  color: white;
+  padding: 20px 0;
+  margin-top: 40px;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 13px;
+  font-size: 15px;
+  font-family: 'Press Start 2P', cursive;
+}
+
+@media (min-width: 600px) {
+  .footer-content {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+
+/* *********NAVBAR********* */
+.navbar {
+  /* background-color: #33333348; */
+  padding: 15px 0;
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1); /* X, Y, DESENFOQUE*/
+}
+
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-links svg {
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.navbar-links span {
+  color: #00ffcc;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.navbar-links li a{
+  color: white;
+  text-decoration: none;
+  /* font-family: "Lato", sans-serif; IMPORTADO */
+  font-family: 'Press Start 2P', cursive;
+  /* font-weight: 900; */
+  font-style: normal;
+  font-size: 18px;
+  letter-spacing: 2px;
+  transition: color 0.3s ease;
+}
+
+.navbar-links li a:hover {
+  color: #db0000;
+}
+
+
+.navbar-link-button {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  letter-spacing: 2px;
+  text-decoration: none;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 18px;
+}
+
+.navbar-link-button:hover {
+  text-decoration: none;
+  color: #00d9ff; /* o el color que uses para links activos */
+}
+
+/* Responsive: menú colapsado básico */
+/* Responsive: columna en pantallas pequeñas */
+@media (max-width: 600px) {
+  .navbar {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .navbar-links {
+    flex-direction: column;
+    gap: 10px;
+  }
+} 
+
+/* *********STATPAGE********* */
+@media (max-width: 600px) {
+  .statpage-container{
+    margin: 2rem auto;
+  }
+
+  .botones-perfom{
+    margin-bottom: 16px;
+  }
+
+  .tabla-stat{
+    border-collapse: collapse;
+  }
+}
+
+/* *********forms LOGIN, REGISTRO, UPDATE********* */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  max-width: 500px; /*Ancho*/
+  margin: auto;
+  padding: 16px;
+}
+
+.form-container h1 {
+  font-family: 'Pokemon Solid', sans-serif;
+  letter-spacing: 5px;
+  text-shadow: rgb(163, 1, 1) 1px 0 10px;
+  text-align: center;
+}
+
+.form-container-div {
+  margin-bottom: 12px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 20px;
+}
+
+.form-container-div input{
+  font-size: 20px;
+}
+
+.form-container-div input[type=text]:focus,
+.form-container-div input[type=password]:focus{
+  background-color: rgba(255, 204, 0, 0.288);
+}
+
+
+/* ********* MAZOS PAGE ********* */
+.mazos-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 16px;
+}
+
+.mazos-container h2{
+  font-family: 'Pokemon Solid', sans-serif;
+  letter-spacing: 5.5px;
+  text-shadow: #fc0 1px 0 10px;
+}
+
+.mazo-card {
+  background-color: rgba(0, 0, 0, 0.144) ;
+  border: 2px solid #ccc;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+
+.mazo-card.sin-mazos {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 2px dashed #aaa;
+  text-align: center;
+  padding: 20px;
+}
+
+.mazo-nombre {
+  margin: 0;
+  letter-spacing: 2px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 20px;
+  text-shadow: rgb(192, 16, 3) 1px 0 10px;
+}
+
+.mazo-botones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  
+}
+
+.mazo-edicion {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.mazo-botones button{
+  cursor: pointer;
+  align-items: center;
+  letter-spacing: 2px;
+  font-size: 15px;
+  opacity: 1.0;
+  transition-duration: 0.4s;
+  
+}
+.mazo-edicion button{
+  cursor: pointer;
+  align-items: center;
+  letter-spacing: 2px;
+  font-size: 15px;
+  transition-duration: 0.4s;
+}
+.mazo-botones button:hover,
+.mazo-edicion button:hover{
+  background-color: #00ffcc50;
+  transform: scale(1.1);
+}
+
+.boton-crear {
+  margin-top: 24px;
+  padding: 10px 20px;
+  font-weight: bold;
+}
+
+.boton-crear:disabled {
+  cursor: not-allowed;
+}
+
+.mensaje-limite {
+  color: red;
+  margin-top: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* *********Create Mazos Page********* */
+.create-mazo-container {
+  max-width: 1000px;
+  /*width 10% para más amplitud*/
+  margin: auto;
+  padding: 20px;
+}
+
+.create-mazo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.create-mazo-form label {
+  text-align: center;
+}
+
+/*Input nombre del mazo*/
+.input-nombre {
+  padding: 8px;
+  font-size: 16px;
+  width: 100%;
+  max-width: 400px;
+  margin-left: 10px;
+  font-family: 'Press Start 2P', cursive;
+}
+
+/*FILTROS DE BUSQUEDA*/
+.filtros-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center; /* Centra los inputs horizontalmente */
+  align-items: center;
+  margin: 0 auto;
+  padding: 10px;
+  
+}
+
+.filtros-container input {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 200px;
+  
+}
+
+.filtros-container button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: #e63946;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/*GRILLA DE CARTAS*/
+.cartas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px; /*Espacio entre cartas*/
+}
+
+.carta-card {
+  border: 2px solid #8b8b8b;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+} 
+
+.carta-card img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.carta-card img:hover {
+  /* transform: rotateY(360deg) scale(1.4); */
+  transform: scale(1.15);
+  z-index: 2;
+}
+
+.carta-card.seleccionada {
+  border-color: #007bff;
+  background-color: #e6f0ff;
+  color:#000;
+}
+
+.carta-card.seleccionada img {
+  border: 1px solid #007bff;
+}
+
+/* VENTANA MODAL PARA AMPLIACIÓN de IMAGEN EN CREACIÓN DE MAZOS*/
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-content {
+  background: rgba(0, 0, 0, 0.7); /* estaria bueno asignar una img*/
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 20%;
+  max-height: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-content img {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 8px;
+  transition: transform 0.6s;
+}
+
+.modal-content img:hover {
+  transform: scale(1.1); /* rotateY(180deg)  Deberia tener un DORSO default */
+}
+
+.modal-content button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #ef5350;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+} 
+
+.modal-content button:hover {
+  background-color: #d32f2f;
+}
+
+/* **************VER MAZO************** */
+/* MODAL DE VER MAZO CON GRILLA DE CARTAS distinto al de crear mazo */
+.modal-cartas {
+  background: rgba(0, 0, 0, 0.85);
+  padding: 30px;
+  border-radius: 16px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-cartas h3 {
+  color: #fff;
+  margin-bottom: 20px;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.modal-cartas .cartas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  justify-content: center;   /* Esto centra horizontalmente */
+  max-width: 1000px;         /* Limitar ancho */
+  width: 100%;
+}
+
+
+.modal-cartas button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #ef5350;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.modal-cartas button:hover {
+  background-color: #d32f2f;
+}
+
+/* **************BOTÓN POKEMON************** */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+.pokemon-button,
+.pokemon-button-return {
+  font-family: 'Press Start 2P', cursive;
+  display: flex;
+  margin: 0 auto;
+  gap: 12px;
+  background: linear-gradient(to bottom, #FF1C1C, #B80000);
+  color: white;
+  border: 4px solid #000000;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 20px;
+  text-shadow: 2px 2px #000000;
+  /* box-shadow: 0 2px #000; */
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.pokemon-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px #000;
+}
+
+.pokemon-button:active { /* Efecto al hacer clic */
+  transform: translateY(2px);
+  box-shadow: 0 2px #000;
+}
+
+.pokemon-button:disabled {
+  background: linear-gradient(to bottom, #CCC, #141414);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.pokemon-button-return:hover {
+  background: linear-gradient(to bottom, #2c2c2c, #B80000);
+  transform: translateY(-2px);
+  box-shadow: 0 2px #000;
+}
+
+/* JUGAR */
+/* === CONTENEDOR PRINCIPAL === */
+.game-page {
+  background-image: url('../images/tablero2.jpg'); /*Imagen de fondo*/
+  background-size: cover;
+  background-position: center;
+  padding: 20px;
+  border-radius: 20px;
+  /* width: 100vw; */
+  /* height: 100vh; */
+  display: flex;
+  overflow: hidden;
+  justify-content: center;
+  align-items: center;
+  color: white;
+
+}
+
+/* === ÁREA CENTRAL DEL TABLERO DE JUEGO === */
+.tablero-juego {
+  background-color: rgba(0, 0, 0, 0.65);
+  padding: 30px;
+  border-radius: 20px;
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* overflow: hidden; */
+  box-shadow: 0 0 15px #000;
+}
+
+.tablero-juego h2 {
+  font-family: 'Pokemon Solid', sans-serif;
+  letter-spacing: 5px;
+}
+
+/* === CARTAS DEL SERVIDOR (ARRIBA Y PEQUEÑAS) === */
+.cartas-servidor {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  transform: scale(0.7);
+  opacity: 0.7;
+  margin-bottom: 10px;
+  pointer-events: none;
+  letter-spacing: 3px;
+}
+
+.carta-servidor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.carta-servidor img {
+  width: 120px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+/* === ZONA CENTRAL: RESULTADO DE JUGADA === */
+.zona-jugada {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #fff;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  margin: 10px 0;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  letter-spacing: 2px;
+}
+
+/* === CARTAS DEL USUARIO (ABAJO) === */
+.cartas-usuario {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  /* margin-top: 10px; */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.cartas-usuario h3,
+.cartas-servidor h3{
+  font-family: 'Press Start 2P', cursive;
+  letter-spacing: 5px;
+  margin-right: 10px;
+}
+
+.carta-jugador {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid #fff;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.carta-jugador:hover {
+  transform: scale(1.05);
+}
+
+.carta-jugador img {
+  width: 120px;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+  transition: transform 0.3s ease-in-out;
+}
+
+.carta-jugador img:hover{
+  transform: scale(1.1);
+}
+
+/* === BOTÓN DE REJUGAR === */
+.gameBack {
+  margin:5px auto;
+  padding: 12px 24px;
+  background-color: #9b7c00;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  color: black;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s ease, background 0.2s;
+  align-self: center;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 20px;
+}
+
+.gameBack:hover {
+  background-color: #ffcc00;
+  transform:  translateY(-2px);
+}
+
+/* Separadores visuales entre zonas del tablero */
+.separador {
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(to right, #ffffff33, #ffffffaa, #ffffff33);
+  border: none;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+
+/* DESAPARECER CARTA SV */
+@keyframes desaparecerCarta {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+}
+
+.carta-servidor {
+  transition: all 0.4s ease;
+  opacity: 1;
+}
+
+.carta-servidor.eliminando {
+  animation: desaparecerCarta 0.4s forwards;
+}
